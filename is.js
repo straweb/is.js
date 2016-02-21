@@ -1,36 +1,36 @@
-// is.js 0.2.3
+// is.js 0.8.0
 // Author: Aras Atasaygin
 
 // AMD with global, Node, or global
 ;(function(root, factory) {
     if(typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
-        define(['is'], function(is) {
+        define(function() {
             // Also create a global in case some scripts
             // that are loaded still are looking for
             // a global even when an AMD loader is in use.
-            return (root.is = factory(is));
+            return (root.is = factory());
         });
     } else if(typeof exports === 'object') {
         // Node. Does not work with strict CommonJS, but
         // only CommonJS-like enviroments that support module.exports,
         // like Node.
-        module.exports = factory(require('is_js'));
+        module.exports = factory();
     } else {
         // Browser globals (root is window)
-        root.is = factory(root.is);
+        root.is = factory();
     }
-}(this, function(is) {
+} (this, function() {
 
     // Baseline
     /* -------------------------------------------------------------------------- */
 
-    var root = this;
+    var root = this || global;
     var previousIs = root.is;
 
     // define 'is' object and current version
-    is = {};
-    is.VERSION = '0.2.3';
+    var is = {};
+    is.VERSION = '0.8.0';
 
     // define interfaces
     is.not = {};
@@ -58,12 +58,8 @@
                 parameters = parameters[0];
                 length = parameters.length;
             }
-            var results = [];
             for (var i = 0; i < length; i++) {
-                results.push(func.call(null, parameters[i]));
-            }
-            for (i = 0; i < results.length; i++) {
-                if(!results[i]) {
+                if (!func.call(null, parameters[i])) {
                     return false;
                 }
             }
@@ -80,12 +76,8 @@
                 parameters = parameters[0];
                 length = parameters.length;
             }
-            var results = [];
             for (var i = 0; i < length; i++) {
-                results.push(func.call(null, parameters[i]));
-            }
-            for (i = 0; i < results.length; i++) {
-                if(results[i]) {
+                if (func.call(null, parameters[i])) {
                     return true;
                 }
             }
@@ -128,23 +120,28 @@
 
     // is a given value NaN?
     is.nan = function(value) {    // NaN is number :) Also it is the only value which does not equal itself
-        return is.number(value) && value !== value;
+        return value !== value;
     };
 
     // is a given value null?
     is.null = function(value) {
-        return value === null || toString.call(value) === '[object Null]';
+        return value === null;
     };
 
     // is a given value number?
     is.number = function(value) {
-        return toString.call(value) === '[object Number]';
+        return is.not.nan(value) && toString.call(value) === '[object Number]';
     };
 
     // is a given value object?
     is.object = function(value) {
         var type = typeof value;
         return type === 'function' || type === 'object' && !!value;
+    };
+
+    // is given value a pure JSON object?
+    is.json = function(value) {
+        return toString.call(value) === '[object Object]';
     };
 
     // is a given value RegExp?
@@ -210,7 +207,7 @@
     // is a given value space?
     // horizantal tab: 9, line feed: 10, vertical tab: 11, form feed: 12, carriage return: 13, space: 32
     is.space =  function(value) {
-        if(is.string(value)) {
+        if(is.char(value)) {
             var characterCode = value.charCodeAt(0);
             return (characterCode >  8 && characterCode < 14) || characterCode === 32;
         } else {
@@ -247,7 +244,7 @@
 
     // is a given number odd?
     is.odd = function(numb) {
-        return is.number(numb) && numb % 2 !== 0;
+        return is.number(numb) && numb % 2 === 1;
     };
 
     // is a given number positive?
@@ -309,19 +306,24 @@
     // dateString match m/d/yy and mm/dd/yyyy, allowing any combination of one or two digits for the day and month, and two or four digits for the year
     // time match hours, minutes, and seconds, 24-hour clock
     var regexps = {
-        url: /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/,
+        url: /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/i,
         email: /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i,
         creditCard: /^(?:(4[0-9]{12}(?:[0-9]{3})?)|(5[1-5][0-9]{14})|(6(?:011|5[0-9]{2})[0-9]{12})|(3[47][0-9]{13})|(3(?:0[0-5]|[68][0-9])[0-9]{11})|((?:2131|1800|35[0-9]{3})[0-9]{11}))$/,
         alphaNumeric: /^[A-Za-z0-9]+$/,
         timeString: /^(2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9])$/,
         dateString: /^(1[0-2]|0?[1-9])\/(3[01]|[12][0-9]|0?[1-9])\/(?:[0-9]{2})?[0-9]{2}$/,
         usZipCode: /^[0-9]{5}(?:-[0-9]{4})?$/,
-        caPostalCode: /^(?!.*[DFIOQU])[A-VXY][0-9][A-Z]?[0-9][A-Z][0-9]$/,
+        caPostalCode: /^(?!.*[DFIOQU])[A-VXY][0-9][A-Z]\s?[0-9][A-Z][0-9]$/,
         ukPostCode: /^[A-Z]{1,2}[0-9RCHNQ][0-9A-Z]?\s?[0-9][ABD-HJLNP-UW-Z]{2}$|^[A-Z]{2}-?[0-9]{4}$/,
         nanpPhone: /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/,
         eppPhone: /^\+[0-9]{1,3}\.[0-9]{4,14}(?:x.+)?$/,
         socialSecurityNumber: /^(?!000|666)[0-8][0-9]{2}-(?!00)[0-9]{2}-(?!0000)[0-9]{4}$/,
-        affirmative: /^(?:1|t(?:rue)?|y(?:es)?|ok(?:ay)?)$/
+        affirmative: /^(?:1|t(?:rue)?|y(?:es)?|ok(?:ay)?)$/,
+        hexadecimal: /^[0-9a-fA-F]+$/,
+        hexColor: /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/,
+        ipv4: /^(?:(?:\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}(?:\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])$/,
+        ipv6: /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$|^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/,
+        ip: /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$|^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/
     };
 
     // create regexp checks methods from 'regexp' object
@@ -340,8 +342,8 @@
     // String checks
     /* -------------------------------------------------------------------------- */
 
-    // is a given string inculde parameter substring?
-    is.include = String.prototype.includes || function(str, substr) {
+    // is a given string include parameter substring?
+    is.include = function(str, substr) {
         return str.indexOf(substr) > -1;
     };
     // include method does not support 'all' and 'any' interfaces
@@ -366,7 +368,7 @@
 
     // is string end with a given endWith parameter?
     is.endWith = function(str, endWith) {
-        return is.string(str) && str.indexOf(endWith) === str.length -  endWith.length;
+        return is.string(str) && str.indexOf(endWith) > -1 && str.indexOf(endWith) === str.length -  endWith.length;
     };
     // endWith method does not support 'all' and 'any' interfaces
     is.endWith.api = ['not'];
@@ -382,6 +384,11 @@
             capitalized.push(words[i][0] === words[i][0].toUpperCase());
         }
         return is.all.truthy.apply(null, capitalized);
+    };
+
+    // is a given string palindrome?
+    is.palindrome = function(str) {
+        return is.string(str) && str == str.split('').reverse().join('');
     };
 
     // Time checks
@@ -440,6 +447,11 @@
     };
     // year method does not support 'all' and 'any' interfaces
     is.year.api = ['not'];
+
+    // is the given year a leap year?
+    is.leapYear = function(year) {
+        return is.number(year) && ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0);
+    };
 
     // is a given date weekend?
     // 6: Saturday, 0: Sunday
@@ -533,11 +545,21 @@
         // firefox method does not support 'all' and 'any' interfaces
         is.firefox.api = ['not'];
 
+        // is current browser edge?
+        is.edge = function() {
+            return /edge/i.test(userAgent);
+        };
+        // edge method does not support 'all' and 'any' interfaces
+        is.edge.api = ['not'];
+
         // is current browser internet explorer?
         // parameter is optional
         is.ie = function(version) {
             if(!version) {
-                return /msie/i.test(userAgent);
+                return /msie/i.test(userAgent) || "ActiveXObject" in window;
+            }
+            if(version >= 11) {
+                return "ActiveXObject" in window;
             }
             return new RegExp('msie ' + version).test(userAgent);
         };
@@ -546,7 +568,8 @@
 
         // is current browser opera?
         is.opera = function() {
-            return /opr/i.test(userAgent);
+            return /^Opera\//.test(userAgent) || // Opera 12 and older versions
+                /\x20OPR\//.test(userAgent); // Opera 15+
         };
         // opera method does not support 'all' and 'any' interfaces
         is.opera.api = ['not'];
@@ -609,7 +632,7 @@
 
         // is current device blackberry?
         is.blackberry = function() {
-            return /blackberry/i.test(userAgent);
+            return /blackberry/i.test(userAgent) || /BB10/i.test(userAgent);
         };
         // blackberry method does not support 'all' and 'any' interfaces
         is.blackberry.api = ['not'];
@@ -681,6 +704,13 @@
         is.offline = not(is.online);
         // offline method does not support 'all' and 'any' interfaces
         is.offline.api = ['not'];
+
+        // is current device supports touch?
+        is.touchDevice = function() {
+            return 'ontouchstart' in window ||'DocumentTouch' in window && document instanceof DocumentTouch;
+        };
+        // touchDevice method does not support 'all' and 'any' interfaces
+        is.touchDevice.api = ['not'];
     }
 
     // Object checks
@@ -717,6 +747,11 @@
     // setInterval method is only available for window object
     is.windowObject = function(obj) {
         return typeof obj === 'object' && 'setInterval' in obj;
+    };
+
+    // is a given object a DOM node?
+    is.domNode = function(obj) {
+        return is.object(obj) && obj.nodeType > 0;
     };
 
     // Array checks

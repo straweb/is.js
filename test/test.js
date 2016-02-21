@@ -1,4 +1,5 @@
-var expect = chai.expect;
+
+var expect = (typeof chai != 'undefined') ? chai.expect : require('chai').expect;
 
 describe("type checks", function() {
     describe("is.arguments", function() {
@@ -367,6 +368,9 @@ describe("type checks", function() {
             var notNumber = 'test';
             expect(is.number(notNumber)).to.be.false;
         });
+        it("should return false if passed parameter is NaN", function() {
+            expect(is.number(NaN)).to.be.false;
+        })
     });
     describe("is.not.number", function() {
         it("should return false if passed parameter type is number", function() {
@@ -376,6 +380,9 @@ describe("type checks", function() {
             var notNumber = 'test';
             expect(is.not.number(notNumber)).to.be.true;
         });
+        it("should return true if passed parameter is NaN", function() {
+            expect(is.not.number(NaN)).to.be.true;
+        })
     });
     describe("is.all.number", function() {
         it("should return true if all passed parameter types are number", function() {
@@ -435,6 +442,45 @@ describe("type checks", function() {
         it("should return false if all passed parameter types are not object", function() {
             expect(is.any.object(1, 2, 3)).to.be.false;
             expect(is.any.object([1, 2, 3])).to.be.false;
+        });
+    });
+    describe("is.json",function(){
+        it("should return true if passed parameter type is a json object", function() {
+            expect(is.json({})).to.be.true;
+        });
+        it("should return false if passed parameter type is not a json object", function() {
+            var notObject = 'test';
+            expect(is.json(notObject)).to.be.false;
+        });
+    });
+     describe("is.not.json", function() {
+        it("should return false if passed parameter type is json object", function() {
+            expect(is.not.json({})).to.be.false;
+        });
+        it("should return true if passed parameter type is not json object", function() {
+            var notObject = 'test';
+            expect(is.not.json(notObject)).to.be.true;
+        });
+    });
+    describe("is.all.json", function() {
+        it("should return true if all passed parameter types are object", function() {
+            expect(is.all.json({}, {})).to.be.true;
+            expect(is.all.json([{}, {}])).to.be.true;
+        });
+        it("should return false if any passed parameter type is not object", function() {
+            var notObject = 'test';
+            expect(is.all.json({}, notObject,[])).to.be.false;
+            expect(is.all.json([{}, notObject,""])).to.be.false;
+        });
+    });
+    describe("is.any.json", function() {
+        it("should return true if any passed parameter type is json object", function() {
+            expect(is.any.json({}, {}, 'test')).to.be.true;
+            expect(is.any.json([{}, {}, 'test'])).to.be.true;
+        });
+        it("should return false if all passed parameter types are not json object", function() {
+            expect(is.any.json(1, 2, 3)).to.be.false;
+            expect(is.any.json([1, 2, 3])).to.be.false;
         });
     });
     describe("is.regexp", function() {
@@ -807,6 +853,9 @@ describe("arithmetic checks", function() {
         it("should return false if given number is not even", function() {
             expect(is.even(3)).to.be.false;
         });
+        it("should return false if given number is not integer", function() {
+            expect(is.even(2.5)).to.be.false;
+        });
     });
     describe("is.not.even", function() {
         it("should return false if given number is even", function() {
@@ -843,7 +892,10 @@ describe("arithmetic checks", function() {
         it("should return false if given number is not odd", function() {
             expect(is.odd(2)).to.be.false;
         });
-    });
+        it("should return false if given number is not integer", function() {
+            expect(is.odd(2.5)).to.be.false;
+        });
+   });
     describe("is.not.odd", function() {
         it("should return false if given number is odd", function() {
             expect(is.not.odd(3)).to.be.false;
@@ -1394,6 +1446,9 @@ describe("regexp checks", function() {
         it("should return true if given value is Canada postal code", function() {
             expect(is.caPostalCode('L8V3Y1')).to.be.true;
         });
+        it("should return true if given value is Canada postal code with space", function() {
+            expect(is.caPostalCode('L8V 3Y1')).to.be.true;
+        });
         it("should return false if given value is not Canada postal code", function() {
             expect(is.caPostalCode('1')).to.be.false;
         });
@@ -1606,7 +1661,188 @@ describe("regexp checks", function() {
             expect(is.any.affirmative(['no', '2'])).to.be.false;
         });
     });
+    describe("is.hexadecimal", function() {
+        it("should return true if given value is hexadecimal", function() {
+            expect(is.hexadecimal('ff')).to.be.true;
+        });
+        it("should return false if given value is not hexadecimal", function() {
+            expect(is.hexadecimal(0.287)).to.be.false;
+        });
+    });
+    describe("is.not.hexadecimal", function() {
+        it("should return false if given value is hexadecimal", function() {
+            expect(is.not.hexadecimal('ffFF')).to.be.false;
+        });
+        it("should return true if given value is not hexadecimal", function() {
+            expect(is.not.hexadecimal('nohexhere')).to.be.true;
+        });
+    });
+    describe("is.all.hexadecimal", function() {
+        it("should return true if all given values are hexadecimal", function() {
+            expect(is.all.hexadecimal('bcd', 'fF0')).to.be.true;
+            expect(is.all.hexadecimal(['bcd', 'fF0'])).to.be.true;
+        });
+        it("should return false if any given value is not hexadecimal", function() {
+            expect(is.all.hexadecimal('ff', 'nohex')).to.be.false;
+            expect(is.all.hexadecimal(['ff', 'nohex'])).to.be.false;
+        });
+    });
+    describe("is.any.hexadecimal", function() {
+        it("should return true if any given value is hexadecimal", function() {
+            expect(is.any.hexadecimal('F5', 'nohex')).to.be.true;
+            expect(is.any.hexadecimal(['F5', 'nohex'])).to.be.true;
+        });
+        it("should return false if all given values are not hexadecimal", function() {
+            expect(is.any.hexadecimal('hex', 'none')).to.be.false;
+            expect(is.any.hexadecimal(['hex', 'none'])).to.be.false;
+        });
+    });
+    describe("is.hexColor", function() {
+        it("should return true if given value is hexColor", function() {
+            expect(is.hexColor('#333')).to.be.true;
+        });
+        it("should return false if given value is not hexColor", function() {
+            expect(is.hexColor(0.287)).to.be.false;
+        });
+    });
+    describe("is.not.hexColor", function() {
+        it("should return false if given value is hexColor", function() {
+            expect(is.not.hexColor('#333')).to.be.false;
+        });
+        it("should return true if given value is not hexColor", function() {
+            expect(is.not.hexColor(0.287)).to.be.true;
+        });
+    });
+    describe("is.all.hexColor", function() {
+        it("should return true if all given values are hexColor", function() {
+            expect(is.all.hexColor('#333', '#444444')).to.be.true;
+            expect(is.all.hexColor(['#333', '#444444'])).to.be.true;
+        });
+        it("should return false if any given value is not hexColor", function() {
+            expect(is.all.hexColor('#3333', 'nohex')).to.be.false;
+            expect(is.all.hexColor(['#3333', 'nohex'])).to.be.false;
+        });
+    });
+    describe("is.any.hexColor", function() {
+        it("should return true if any given values is hexColor", function() {
+            expect(is.any.hexColor('#333', 'nohex')).to.be.true;
+            expect(is.any.hexColor(['#333', 'nohex'])).to.be.true;
+        });
+        it("should return false if all given values are not hexColor", function() {
+            expect(is.any.hexColor('nohex', 'nohex')).to.be.false;
+            expect(is.any.hexColor(['nohex', 'nohex'])).to.be.false;
+        });
+    });
+    describe("is.ip", function() {
+        it("should return true if given value is a valid IP address", function() {
+                expect(is.ip('2001:DB8:0:0:1::1')).to.be.true;
+        });
+        it("should return false if given value is not a valid IP address", function() {
+                expect(is.ip('985.12.3.4')).to.be.false;
+        });
+    });
+    describe("is.not.ip", function() {
+        it("should return false if given value is a valid IP address", function() {
+                expect(is.not.ip('2001:db8:0:0:1::1')).to.be.false;
+        });
+        it("should return true if given value is not a valid IP address", function() {
+                expect(is.not.ip('0..3.4')).to.be.true;
+        });
+    });
+    describe("is.all.ip", function() {
+        it("should return true if all given values are valid IP addresses", function() {
+                expect(is.all.ip('2001:db8::0:1:0:0:1', '201.50.198.2')).to.be.true;
+                expect(is.all.ip(['2001:db8::0:1:0:0:1', '201.50.198.2'])).to.be.true;
+        });
+        it("should return false if any given value is not a valid IP address", function() {
+                expect(is.all.ip('987.25.45.6', 'QFFF:0:78F:9::8:8:9')).to.be.false;
+                expect(is.all.ip(['987.25.45.6', 'QFFF:0:78F:9::8:8:9'])).to.be.false;
+         });
+    });
+    describe("is.any.ip", function() {
+         it("should return true if any given value is a valid IP address", function() {
+                 expect(is.any.ip('2001:0db8::1:0:0:1', '850..1.4')).to.be.true;
+                 expect(is.any.ip(['2001:0db8::1:0:0:1', '850..1.4'])).to.be.true;
+          });
+          it("should return false if all given values are not valid IP address", function() {
+                 expect(is.any.ip('1.2.3.', '78FF:::::::L')).to.be.false;
+                 expect(is.any.ip(['1.2.3.', '78FF:::::::L'])).to.be.false;
+          });
+    });
+    describe("is.ipv4", function() {
+          it("should return true if given value is a valid IPv4 address", function() {
+                  expect(is.ipv4('198.12.3.142')).to.be.true;
+          });
+          it("should return false if given value is not a valid IPv4 address", function() {
+                  expect(is.ipv4('985.12.3.4')).to.be.false;
+          });
+    });
+    describe("is.not.ipv4", function() {
+           it("should return false if given value is a valid IPv4 address", function() {
+                  expect(is.not.ipv4('102.52.47.18')).to.be.false;
+           });
+           it("should return true if given value is not a valid IPv4 address", function() {
+                  expect(is.not.ipv4('0..3.4')).to.be.true;
+           });
+    });
+    describe("is.all.ipv4", function() {
+           it("should return true if all given values are valid IPv4 addresses", function() {
+                  expect(is.all.ipv4('0.0.0.0', '201.50.198.2')).to.be.true;
+                  expect(is.all.ipv4(['0.0.0.0', '201.50.198.2'])).to.be.true;
+           });
+           it("should return false if any given value is not a valid IPv4 address", function() {
+                  expect(is.all.ipv4('987.25.45.6', '125.256.10.3')).to.be.false;
+                  expect(is.all.ipv4(['987.25.45.6', '125.256.10.3'])).to.be.false;
+           });
+    });
+    describe("is.any.ipv4", function() {
+           it("should return true if any given value is a valid IPv4 address", function() {
+                  expect(is.any.ipv4('255.255.255.255', '850..1.4')).to.be.true;
+                  expect(is.any.ipv4(['255.255.255.255', '850..1.4'])).to.be.true;
+           });
+           it("should return false if all given values are not valid IPv4 address", function() {
+                  expect(is.any.ipv4('1.2.3.', '78FF:::::::L')).to.be.false;
+                  expect(is.any.ipv4(['1.2.3.', '78FF:::::::L'])).to.be.false;
+           });
+    });
+    describe("is.ipv6", function() {
+        it("should return true if given value is a valid IPv6 address", function() {
+                expect(is.ipv6('2001:DB8:0:0:1::1')).to.be.true;
+        });
+        it("should return false if given value is not a valid IPv6 address", function() {
+                expect(is.ip('985.12.3.4')).to.be.false;
+        });
+    });
+    describe("is.not.ipv6", function() {
+        it("should return false if given value is a valid IPv6 address", function() {
+                expect(is.not.ipv6('2001:db8:0:0:1::1')).to.be.false;
+        });
+        it("should return true if given value is not a valid IPv6 address", function() {
+                expect(is.not.ip('0..3.4')).to.be.true;
+        });
+    });
+    describe("is.all.ipv6", function() {
+        it("should return true if all given values are valid IPv6 addresses", function() {
+                expect(is.all.ipv6('2001:db8::0:1:0:0:1', '1:50:198:2::1:2:8')).to.be.true;
+                expect(is.all.ipv6(['2001:db8::0:1:0:0:1','1:50:198:2::1:2:8'])).to.be.true;
+        });
+        it("should return false if any given value is not a valid IPv6 address", function() {
+                expect(is.all.ipv6('987.25.45.6', 'QFFF:0:78F:9::8:8:9')).to.be.false;
+                expect(is.all.ipv6(['987.25.45.6', 'QFFF:0:78F:9::8:8:9'])).to.be.false;
+         });
+    });
+    describe("is.any.ipv6", function() {
+         it("should return true if any given value is a valid IPv6 address", function() {
+                 expect(is.any.ipv6('2001:0db8::1:0:0:1', '850..1.4')).to.be.true;
+                 expect(is.any.ipv6(['2001:0db8::1:0:0:1', '850..1.4'])).to.be.true;
+          });
+          it("should return false if all given values are not valid IPv6 address", function() {
+                 expect(is.any.ipv6('1.2.3.', '78FF:::::::L')).to.be.false;
+                 expect(is.any.ipv6(['1.2.3.', '78FF:::::::L'])).to.be.false;
+          });
+    });
 });
+
 describe("string checks", function() {
     describe("is.include", function() {
         it("should return true if given string contains substring", function() {
@@ -1719,6 +1955,9 @@ describe("string checks", function() {
         it("should return false if given string does not end with substring", function() {
             expect(is.endWith('test', 'te')).to.be.false;
         });
+        it("should prevent true return if endWith is not present in the string", function() {
+            expect(is.endWith('id', '_id')).to.be.false;
+        });
     });
     describe("is.not.endWith", function() {
         it("should return false if given string ends with substring", function() {
@@ -1790,6 +2029,42 @@ describe("string checks", function() {
         it("should return false if all given sentences' words are not capitalized", function() {
             expect(is.any.capitalized('test is good', 'chase and status')).to.be.false;
             expect(is.any.capitalized(['test is good', 'chase and status'])).to.be.false;
+        });
+    });
+    describe("is.palindrome", function() {
+        it("should return true if given string is palindrome", function() {
+            expect(is.palindrome('testset')).to.be.true;
+        });
+        it("should return false if given string is not palindrome", function() {
+            expect(is.palindrome('test')).to.be.false;
+        });
+    });
+    describe("is.not.palindrome", function() {
+        it("should return false if given string is palindrome", function() {
+            expect(is.not.palindrome('testset')).to.be.false;
+        });
+        it("should return true if given string is not palindrome", function() {
+            expect(is.not.palindrome('test')).to.be.true;
+        });
+    });
+    describe("is.all.palindrome", function() {
+        it("should return true if all the given strings are palindrome", function() {
+            expect(is.all.palindrome('testset', 'tt')).to.be.true;
+            expect(is.all.palindrome(['testset', 'tt'])).to.be.true;
+        });
+        it("should return false if any given string is not palindrome", function() {
+            expect(is.all.palindrome('test', 'tt')).to.be.false;
+            expect(is.all.palindrome(['test', 'tt'])).to.be.false;
+        });
+    });
+    describe("is.any.palindrome", function() {
+        it("should return true if any given string is palindrome", function() {
+            expect(is.any.palindrome('testset', 'te')).to.be.true;
+            expect(is.any.palindrome(['testset', 'te'])).to.be.true;
+        });
+        it("should return false if all given strings are not palindrome", function() {
+            expect(is.any.palindrome('test', 'te')).to.be.false;
+            expect(is.any.palindrome(['test', 'te'])).to.be.false;
         });
     });
 });
@@ -2099,6 +2374,42 @@ describe("time checks", function() {
         it("should return true if given year string is not date objects' year", function() {
             var time = 1421572235303;
             expect(is.not.year(new Date(time), 2016)).to.be.true;
+        });
+    });
+    describe("is.leapYear", function() {
+        it("should return true if given year is a leap year", function() {
+            expect(is.leapYear(2016)).to.be.true;
+        });
+        it("should return false if given year is not a leap year", function() {
+            expect(is.leapYear(2015)).to.be.false;
+        });
+    });
+    describe("is.not.leapYear", function() {
+        it("should return false if given year is a leap year", function() {
+            expect(is.not.leapYear(2016)).to.be.false;
+        });
+        it("should return true if given year is not a leap year", function() {
+            expect(is.not.leapYear(2015)).to.be.true;
+        });
+    });
+    describe("is.all.leapYear", function() {
+        it("should return true if all given years are leap years", function() {
+            expect(is.all.leapYear(2080, 2180)).to.be.true;
+            expect(is.all.leapYear([2080, 2180])).to.be.true;
+        });
+        it("should return false if any given year is not a leap year", function() {
+            expect(is.all.leapYear(2015, 2080)).to.be.false;
+            expect(is.all.leapYear([2015, 2080])).to.be.false;
+        });
+    });
+    describe("is.any.leapYear", function() {
+        it("should return true if any given year is leap year", function() {
+            expect(is.any.leapYear(2080, 2181)).to.be.true;
+            expect(is.any.leapYear([2080, 2181])).to.be.true;
+        });
+        it("should return false if all given years are not a leap years", function() {
+            expect(is.any.leapYear(2015, 2081)).to.be.false;
+            expect(is.any.leapYear([2015, 2081])).to.be.false;
         });
     });
     describe("is.weekend", function() {
@@ -2759,6 +3070,47 @@ describe("object checks", function() {
         it("should return false if all given objects are not window object", function() {
             expect(is.any.windowObject({}, {})).to.be.false;
             expect(is.any.windowObject([{}, {}])).to.be.false;
+        });
+    });
+    describe("is.domNode", function() {
+        it("should return true if given object is a DOM node", function() {
+            var obj = document.createElement('div');
+            expect(is.domNode(obj)).to.be.true;
+        });
+        it("should return false if given object is not a DOM node", function() {
+            expect(is.domNode({})).to.be.false;
+        });
+    });
+    describe("is.not.domNode", function() {
+        it("should return false if given object is a DOM node", function() {
+            var obj = document.createElement('span');
+            expect(is.not.domNode(obj)).to.be.false;
+        });
+        it("should return true if given object is not a DOM node", function() {
+            expect(is.not.domNode({})).to.be.true;
+        });
+    });
+    describe("is.any.domNode", function() {
+        it("should return true if any given object is a DOM node", function() {
+            var obj = document.createElement('blockquote');
+            expect(is.any.domNode(window, {}, obj)).to.be.true;
+            expect(is.any.domNode([window, {}, obj])).to.be.true;
+        });
+        it("should return false if all given objects are not DOM nodes", function() {
+            expect(is.any.domNode({}, {})).to.be.false;
+            expect(is.any.domNode([{}, {}])).to.be.false;
+        });
+    });
+    describe("is.all.domNode", function() {
+        it("should return true if all given objects are DOM nodes", function() {
+            var obj1 = document.createElement('em');
+            var obj2 = document.createElement('a');
+            expect(is.all.domNode(obj1, obj2)).to.be.true;
+            expect(is.all.domNode([obj1, obj2])).to.be.true;
+        });
+        it("should return false if any given object is not a DOM node", function() {
+            expect(is.all.domNode({}, window)).to.be.false;
+            expect(is.all.domNode([{}, window])).to.be.false;
         });
     });
 });

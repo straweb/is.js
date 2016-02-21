@@ -1,9 +1,39 @@
 is.js
 =====
+
+[![JS.ORG](https://img.shields.io/badge/js.org-is-ffb400.svg?style=flat-square)](http://js.org)
+
 ####This is a general-purpose check library.
 - No dependencies
 - AMD, Node & browser ready
 
+####Usage:
+
+Node.js:
+```
+npm install is_js
+```
+
+Bower:
+```
+bower install is_js
+```
+
+Build:
+```
+grunt build
+```
+
+Test:
+```
+grunt test
+```
+
+####Contributing:
+Thanks for considering to contribute. Check [here](CONTRIBUTING.md)
+
+####Contributors:
+Many thanks to our contributors: https://github.com/arasatasaygin/is.js/graphs/contributors
 
 Type checks
 ===========
@@ -206,6 +236,9 @@ interfaces: not, all, any
 is.number(42);
 => true
 
+is.number(NaN);
+=> false
+
 is.not.number('42');
 => true
 
@@ -229,7 +262,7 @@ interfaces: not, all, any
 is.object({foo: 'bar'});
 => true
 
-// functions are also returnin as true
+// functions are also returning as true
 is.object(toString);
 => true
 
@@ -244,6 +277,33 @@ is.any.object({}, 2);
 
 // 'all' and 'any' interfaces can also take array parameter
 is.all.object([{}, new Object()]);
+=> true
+```
+
+is.json(value:any)
+--------------------
+####Checks if the given value type is pure json object.
+interfaces: not, all, any
+
+```javascript
+is.json({foo: 'bar'});
+=> true
+
+// functions are returning as false
+is.json(toString);
+=> false
+
+is.not.json([]);
+=> true
+
+is.all.json({}, 1);
+=> false
+
+is.any.json({}, 2);
+=> true
+
+// 'all' and 'any' interfaces can also take array parameter
+is.all.json([{}, {foo: 'bar'}]);
 => true
 ```
 
@@ -685,6 +745,9 @@ interfaces: not, all, any
 is.caPostalCode('L8V3Y1');
 => true
 
+is.caPostalCode('L8V 3Y1');
+=> true
+
 is.caPostalCode('123');
 => false
 
@@ -832,6 +895,137 @@ is.all.affirmative(['yes', 'y', 'true', 't', 'ok', 'okay']);
 => true
 ```
 
+is.hexadecimal(value:any)
+-------------------------
+####Checks if the given value matches hexadecimal regexp.
+interfaces: not, all, any
+
+```javascript
+is.hexadecimal('f0f0f0');
+=> true
+
+is.hexadecimal(2.5);
+=> false
+
+is.not.hexadecimal('string');
+=> true
+
+is.all.hexadecimal('ff', 'f50');
+=> true
+
+is.any.hexadecimal('ff5500', true);
+=> true
+
+// 'all' and 'any' interfaces can also take array parameter
+is.all.hexadecimal(['fff', '333', 'f50']);
+=> true
+```
+
+is.hexColor(value:any)
+-------------------------
+####Checks if the given value matches hexcolor regexp.
+interfaces: not, all, any
+
+```javascript
+is.hexColor('#333');
+=> true
+
+is.hexColor('#3333');
+=> false
+
+is.not.hexColor(0.5);
+=> true
+
+is.all.hexColor('fff', 'f50');
+=> true
+
+is.any.hexColor('ff5500', 0.5);
+=> false
+
+// 'all' and 'any' interfaces can also take array parameter
+is.all.hexColor(['fff', '333', 'f50']);
+=> true
+```
+
+is.ip(value:string)
+-------------------------
+####Checks if the given value matches ip regexp
+interfaces: not, all, any
+
+```javascript
+is.ip('198.156.23.5');
+=> true
+
+is.ip('1.2..5');
+=> false
+
+is.not.ip('8:::::::7');
+=> true
+
+is.all.ip('0:1::4:ff5:54:987:C', '123.123.123.123');
+=> true
+
+is.any.ip('123.8.4.3', '0.0.0.0');
+=> true
+
+// 'all' and 'any' interfaces can also take array parameter
+is.all.ip(['123.123.23.12', 'A:B:C:D:E:F:0:0']);
+=> true
+```
+
+is.ipv4(value:string)
+-------------------------
+####Checks if the given value matches ipv4 regexp
+interfaces: not, all, any
+
+```javascript
+is.ipv4('198.12.3.142');
+=> true
+
+is.ipv4('1.2..5');
+=> false
+
+is.not.ipv4('8:::::::7');
+=> true
+
+is.all.ipv4('198.12.3.142', '123.123.123.123');
+=> true
+
+is.any.ipv4('255.255.255.255', '850..1.4');
+=> true
+
+// 'all' and 'any' interfaces can also take array parameter
+is.all.ipv4(['198.12.3.142', '1.2.3']);
+=> false
+
+```
+
+is.ipv6(value:string)
+-------------------------
+####Checks if the given value matches ipv6 regexp
+interfaces: not, all, any
+
+```javascript
+is.ipv6('2001:DB8:0:0:1::1');
+=> true
+
+is.ipv6('985.12.3.4');
+=> true
+
+is.not.ipv6('8:::::::7');
+=> true
+
+is.all.ipv6('2001:DB8:0:0:1::1', '1:50:198:2::1:2:8');
+=> true
+
+is.any.ipv6('255.255.255.255', '2001:DB8:0:0:1::1');
+=> true
+
+// 'all' and 'any' interfaces can also take array parameter
+is.all.ipv6(['2001:DB8:0:0:1::1', '1.2.3']);
+=> false
+```
+
 String checks
 =============
 
@@ -954,7 +1148,7 @@ is.capitalized('nope');
 is.not.capitalized('nope not capitalized');
 => true
 
-is.capitalized('Yeap Capitalized');
+is.not.capitalized('nope Capitalized');
 => true
 
 is.all.capitalized('Yeap', 'All', 'Capitalized');
@@ -964,7 +1158,36 @@ is.any.capitalized('Yeap', 'some', 'Capitalized');
 => true
 
 // 'all' and 'any' interfaces can also take array parameter
-is.all.upperCase(['Nope', 'not']);
+is.all.capitalized(['Nope', 'not']);
+=> false
+```
+
+is.palindrome(value:string, value:substring)
+---------------------------------------------
+####Checks if the given string is palindrome.
+interfaces: not, all, any
+
+```javascript
+is.palindrome('testset');
+=> true
+
+is.palindrome('nope');
+=> false
+
+is.not.palindrome('nope not palindrome');
+=> true
+
+is.not.palindrome('tt');
+=> false
+
+is.all.palindrome('testset', 'tt');
+=> true
+
+is.any.palindrome('Yeap', 'some', 'testset');
+=> true
+
+// 'all' and 'any' interfaces can also take array parameter
+is.all.palindrome(['Nope', 'testset']);
 => false
 ```
 
@@ -1274,6 +1497,33 @@ is.all.windowObject([window, {nope: 'nope'}]);
 => false
 ```
 
+is.domNode(value:object)
+-----------------------------
+####Checks if the given object is a dom node.
+interfaces: not, all, any
+
+```javascript
+var obj = document.createElement('div');
+is.domNode(obj);
+=> true
+
+is.domNode({nope: 'nope'});
+=> false
+
+is.not.domNode({});
+=> true
+
+is.all.domNode(obj, obj);
+=> true
+
+is.any.domNode(obj, {nope: 'nope'});
+=> true
+
+// 'all' and 'any' interfaces can also take array parameter
+is.all.domNode([obj, {nope: 'nope'}]);
+=> false
+```
+
 Array checks
 ============
 
@@ -1362,6 +1612,19 @@ is.firefox();
 
 is.not.firefox();
 => false if current browser is firefox
+```
+
+is.edge()
+------------
+####Checks if current browser is edge.
+interface: not
+
+```javascript
+is.edge();
+=> true if current browser is edge
+
+is.not.edge();
+=> false if current browser is edge
 ```
 
 is.opera()
@@ -1626,6 +1889,19 @@ is.not.offline();
 => true if current device is not offline
 ```
 
+is.touchDevice()
+------------
+####Checks if current device supports touch.
+interface: not
+
+```javascript
+is.touchDevice();
+=> true if current device supports touch
+
+is.not.touchDevice();
+=> true if current device doesn't support touch
+```
+
 Time checks
 ===========
 
@@ -1822,6 +2098,32 @@ is.year(year2016, 2015);
 => false
 
 is.not.year(year2016, 2015);
+=> true
+```
+
+is.leapYear(value:number)
+---------------------------------
+####Checks if the given year number is a leap year
+interfaces: not, all, any
+
+```javascript
+is.leapYear(2016);
+=> true
+
+is.leapYear(2015);
+=> false
+
+is.not.leapYear(2015);
+=> true
+
+is.all.leapYear(2015, 2016);
+=> false
+
+is.any.leapYear(2015, 2016);
+=> true
+
+// 'all' and 'any' interfaces can also take array parameter
+is.all.leapYear([2016, 2080]);
 => true
 ```
 
